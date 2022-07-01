@@ -1,26 +1,19 @@
-﻿require('rootpath')();
-const express = require('express');
+﻿const express = require("express");
 const app = express();
-const cors = require('cors');
-const bodyParser = require('body-parser');
-const jwt = require('_helpers/jwt');
-const errorHandler = require('_helpers/error-handler');
-
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
+const cors = require("cors");
+require("dotenv").config({ path: "./config.env" });
+const port = 5000;
 app.use(cors());
+app.use(express.json());
+app.use(require("./routes/record"));
+// get driver connection
+const dbo = require("./db/conn");
 
-// use JWT auth to secure the api
-app.use(jwt());
+app.listen(port, () => {
+  // perform a database connection when server starts
+  dbo.connectToServer(function (err) {
+    if (err) console.error(err);
 
-// api routes
-app.use('/users', require('./users/users.controller'));
-
-// global error handler
-app.use(errorHandler);
-
-// start server
-const port = process.env.NODE_ENV === 'production' ? (process.env.PORT || 80) : 4000;
-const server = app.listen(port, function () {
-    console.log('Server listening on port ' + port);
+  });
+  console.log(`Server is running on port: ${port}`);
 });
